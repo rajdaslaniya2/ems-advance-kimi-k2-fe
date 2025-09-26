@@ -44,12 +44,20 @@ const EventList: React.FC = () => {
                   <span className="text-sm text-green-400 font-medium">
                     {e.available_seats} seats left
                   </span>
-                  <button
-                    onClick={() => nav(`/book/${e.id}`)}
-                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-semibold transition"
-                  >
-                    Book Now
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => nav(`/book/${e.id}`)}
+                      className="px-3 py-1 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-semibold transition"
+                    >
+                      Quick Book
+                    </button>
+                    <button
+                      onClick={() => nav(`/book-seats/${e.id}`)}
+                      className="px-3 py-1 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold transition"
+                    >
+                      Select Seats
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

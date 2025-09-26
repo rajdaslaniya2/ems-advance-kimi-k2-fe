@@ -169,17 +169,26 @@ const AdminDashboard: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-2">
                     <button
-                      onClick={() => setEditingEvent(event)}
+                      onClick={() => {
+                        setEditingEvent(event);
+                        setShowForm(true);
+                      }}
                       className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
                     >
                       Edit
                     </button>
                     <button
+                      onClick={() => navigate(`/admin/seats/${event.id}`)}
+                      className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+                    >
+                      Manage Seats
+                    </button>
+                    <button
                       onClick={() => handleDeleteEvent(event.id)}
                       disabled={(event.booking_count || 0) > 0}
-                      className={`px-3 py-1 rounded text-sm ${
+                      className={`bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm ${
                         (event.booking_count || 0) > 0
                           ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                           : 'bg-red-600 hover:bg-red-700'
