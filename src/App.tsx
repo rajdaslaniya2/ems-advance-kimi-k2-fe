@@ -7,6 +7,8 @@ import MyBookings from "./pages/MyBookings";
 import Login from "./pages/Login";
 import { Link } from "react-router-dom";
 import Register from "./pages/Register";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 import { getTokenPayload } from "./utils/jwt";
 
 /* ----------  tiny guard  ---------- */
@@ -15,9 +17,16 @@ const Private: React.FC<{ children: React.JSX.Element }> = ({ children }) => {
   return token ? children : <Navigate to="/login" replace />;
 };
 
+const PrivateAdmin: React.FC<{ children: React.JSX.Element }> = ({ children }) => {
+  const { token, user } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  if (user?.role !== 'admin') return <Navigate to="/admin/login" replace />;
+  return children;
+};
+
 /* ----------  layout with dynamic nav  ---------- */
 const Layout: React.FC = () => {
-  const { token, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const payload = getTokenPayload();
 
   return (
@@ -70,6 +79,11 @@ const Layout: React.FC = () => {
                 </Link>
               </>
             )}
+            {user?.role === 'admin' && (
+              <Link to="/admin/dashboard" className="hover:text-white transition">
+                Admin Dashboard
+              </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -84,6 +98,18 @@ const Layout: React.FC = () => {
           <Route
             path="/register"
             element={!token ? <Register /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/admin/login"
+            element={!token || user?.role !== 'admin' ? <AdminLogin /> : <Navigate to="/admin/dashboard" replace />}
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateAdmin>
+                <AdminDashboard />
+              </PrivateAdmin>
+            }
           />
 
           {/* private sections */}

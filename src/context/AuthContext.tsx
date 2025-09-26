@@ -1,16 +1,56 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
+}
 
 interface Auth {
   token: string | null;
-  login: (t: string) => void;
+  user: User | null;
+  login: (token: string, user: User) => void;
   logout: () => void;
 }
-const AuthCtx = createContext<Auth>({ token: null, login: () => {}, logout: () => {} });
+
+const AuthCtx = createContext<Auth>({ 
+  token: null, 
+  user: null,
+  login: () => {}, 
+  logout: () => {} 
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const login = (t: string) => { localStorage.setItem('token', t); setToken(t); };
-  const logout = () => { localStorage.removeItem('token'); setToken(null); };
-  return <AuthCtx.Provider value={{ token, login, logout }}>{children}</AuthCtx.Provider>;
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const login = (token: string, user: User) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setToken(token);
+    setUser(user);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+    setUser(null);
+  };
+
+  return (
+    <AuthCtx.Provider value={{ token, user, login, logout }}>
+      {children}
+    </AuthCtx.Provider>
+  );
 };
+
 export const useAuth = () => useContext(AuthCtx);

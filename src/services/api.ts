@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Event, Booking } from "../types";
 
-// const BASE = 'http://localhost:5001';  // Node.js Express backend
-const BASE = 'https://event-booking-hjef.onrender.com';  // Deployed
+const BASE = 'http://localhost:5001';  // Local development
+// const BASE = 'https://event-booking-hjef.onrender.com';  // Deployed
 // const BASE = `https://dozens-point-absolute-approx.trycloudflare.com`
 
 const axiosInstance = axios.create({
@@ -41,7 +41,7 @@ export const api = {
     axiosInstance
       .get<{ data: Booking[] }>(`${BASE}/api/bookings`)
       .then((r) => r.data.data),
-  cancelBooking: (id: number) =>
+  cancelBooking: (id: string) =>
     axiosInstance
       .post<{ success: boolean }>(`${BASE}/api/bookings/${id}/cancel`)
       .then((r) => r.data),
@@ -56,7 +56,7 @@ export const api = {
 
   register: (payload: { name: string; email: string; password: string }) =>
     axios
-      .post<{ token: string }>(`${BASE}/register`, payload, {
+      .post<{ token: string; user: { id: string; name: string; email: string; role: string } }>(`${BASE}/register`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -65,11 +65,48 @@ export const api = {
 
   login: (payload: { email: string; password: string }) =>
     axios
-      .post<{ token: string }>(`${BASE}/login`, payload, {
+      .post<{ token: string; user: { id: string; name: string; email: string; role: string } }>(`${BASE}/login`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
       })
+      .then((r) => r.data),
+
+  adminLogin: (payload: { email: string; password: string }) =>
+    axios
+      .post<{ token: string; user: { id: string; name: string; email: string; role: string } }>(`${BASE}/admin/login`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((r) => r.data),
+
+  // Admin event CRUD operations
+  createEvent: (eventData: {
+    name: string;
+    date: string;
+    location: string;
+    total_seats: number;
+    description?: string;
+  }) =>
+    axiosInstance
+      .post<{ data: Event }>(`/api/events`, eventData)
+      .then((r) => r.data.data),
+
+  updateEvent: (id: string, eventData: {
+    name?: string;
+    date?: string;
+    location?: string;
+    total_seats?: number;
+    description?: string;
+  }) =>
+    axiosInstance
+      .put<{ data: Event }>(`/api/events/${id}`, eventData)
+      .then((r) => r.data.data),
+
+  deleteEvent: (id: string) =>
+    axiosInstance
+      .delete<{ message: string }>(`/api/events/${id}`)
       .then((r) => r.data),
 };
 //

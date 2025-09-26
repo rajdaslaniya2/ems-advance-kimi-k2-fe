@@ -52,7 +52,7 @@ export const useBookings = () => {
 
   useEffect(() => { refetch(); }, []);
 
-  const cancel = async (id: number) => {
+  const cancel = async (id: string) => {
     await api.cancelBooking(id);
     refetch();
   };

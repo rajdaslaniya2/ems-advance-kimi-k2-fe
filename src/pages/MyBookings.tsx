@@ -25,26 +25,48 @@ const MyBookings: React.FC = () => {
             {bookings.map(b => (
               <div
                 key={b.id}
-                className="bg-white/5 backdrop-blur rounded-2xl p-6 border border-white/10 shadow-lg flex flex-col justify-between"
+                className={`bg-white/5 backdrop-blur rounded-2xl p-6 border border-white/10 shadow-lg flex flex-col justify-between ${
+                  b.eventDeleted ? 'opacity-75 border-red-500/30' : ''
+                }`}
               >
                 <div>
-                  <p className="text-lg font-bold mb-1">{b.event_name} ({b.location})</p>
+                  <p className="text-lg font-bold mb-1">
+                    {b.event_name} 
+                    {b.eventDeleted && (
+                      <span className="text-red-400 text-sm ml-2">(Deleted)</span>
+                    )}
+                  </p>
                   <p className="text-sm text-gray-300">{b.tickets} ticket(s)</p>
+                  {!b.eventDeleted && (
+                    <p className="text-sm text-gray-400 mt-2">
+                      {b.location}
+                    </p>
+                  )}
                   <p className="text-sm text-gray-400 mt-2">
                     {b.userName} · {formatDate(b.date!)}
                   </p>
                   <p className={`text-sm mt-3 ${b.status === 'Confirmed' ? 'text-green-400' : 'text-red-400'}`}>
                     {b.status}
+                    {b.eventDeleted && b.status === 'Confirmed' && (
+                      <span className="text-yellow-400 block text-xs mt-1">
+                        Event no longer available
+                      </span>
+                    )}
                   </p>
                 </div>
 
-                {b.status === 'Confirmed' && (
+                {b.status === 'Confirmed' && !b.eventDeleted && (
                   <button
                     onClick={() => cancel(b.id)}
                     className="mt-4 ml-auto px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white text-sm font-semibold transition"
                   >
                     Cancel
                   </button>
+                )}
+                {b.eventDeleted && (
+                  <div className="mt-4 text-xs text-yellow-400">
+                    This event has been removed by the organizer
+                  </div>
                 )}
               </div>
             ))}

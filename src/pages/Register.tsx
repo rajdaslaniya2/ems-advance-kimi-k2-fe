@@ -15,16 +15,25 @@ const Register: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      // const { token } = (await api.post('/register', form)).data;
-
-      const { token } = await api.register({
+      const response = await api.register({
         name: form.name,
         email: form.email,
         password: form.password,
       });
       
-      // login(token);
-      nav('/login');
+      // Auto-login after registration
+      login(response.token, {
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role as 'user' | 'admin'
+      });
+      
+      if (response.user.role === 'admin') {
+        nav('/admin/dashboard');
+      } else {
+        nav('/');
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Registration failed';
       setError(errorMessage);

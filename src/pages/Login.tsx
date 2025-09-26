@@ -15,14 +15,24 @@ const Login: React.FC = () => {
     setLoading(true);
     setError("");
     try {
-      // TODO: replace with real endpoint when BE ready
-      const { token } = await api.login({
+      const response = await api.login({
         email: form.email,
         password: form.password,
       });
 
-      login(token);
-      nav("/"); // or /my-bookings
+      login(response.token, {
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role as 'user' | 'admin'
+      });
+      
+      // Redirect to admin dashboard if admin
+      if (response.user.role === 'admin') {
+        nav("/admin/dashboard");
+      } else {
+        nav("/");
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.response?.data?.error || "Login failed";
       setError(errorMessage);
