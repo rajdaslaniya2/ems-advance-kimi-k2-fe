@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { getTokenPayload } from '../utils/jwt';
 import { Event } from '../types';
 import { formatDate } from '../utils/date';
+import StripePayment from '../components/StripePayment';
 
 const BookingForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,8 @@ const BookingForm: React.FC = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [perSeatPrice] = useState(50); // ₹50 per seat
 
   useEffect(() => {
     if (id) {
@@ -34,33 +37,25 @@ const BookingForm: React.FC = () => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-    try {
-      if (!id) throw new Error('Event ID is missing');
-      await api.createBooking(id, {
-        userName: form.userName,
-        userEmail: form.userEmail,
-        tickets: form.tickets,
-      });
-      nav('/my-bookings');
-    } catch (err: any) {
-      let errorMessage = 'Booking failed';
-      
-      // Handle validation errors with specific messages
-      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
-        const validationErrors = err.response.data.errors;
-        if (validationErrors.length > 0) {
-          errorMessage = validationErrors[0].msg;
-        }
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response?.data?.message;
-      } else if (err.response?.data?.error) {
-        errorMessage = err.response?.data?.error;
-      }
-      
-      setError(errorMessage);
-    } finally {
+
+    if (!id) {
+      setError('Event ID is missing');
       setSubmitting(false);
+      return;
     }
+
+    const totalPrice = form.tickets * perSeatPrice;
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = async (bookingId: string) => {
+    setSubmitting(false);
+    nav('/my-bookings');
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPayment(false);
+    setSubmitting(false);
   };
 
   return (
@@ -91,21 +86,50 @@ const BookingForm: React.FC = () => {
             Reserve Tickets
           </h1>
 
-          <form onSubmit={handle} className="space-y-5">
-            <Input label="Your name" value={form.userName} onChange={(v) => setForm({ ...form, userName: v })} required />
-            <Input label="Email" type="email" value={form.userEmail} onChange={(v) => setForm({ ...form, userEmail: v })} required />
-            <Input label="Tickets" type="number" min={1} max={event.available_seats} value={form.tickets} onChange={(v) => setForm({ ...form, tickets: Math.min(Number(v), event.available_seats) })} required />
+          {!showPayment ? (
+            <form onSubmit={handle} className="space-y-5">
+              <Input label="Your name" value={form.userName} onChange={(v) => setForm({ ...form, userName: v })} required />
+              <Input label="Email" type="email" value={form.userEmail} onChange={(v) => setForm({ ...form, userEmail: v })} required />
+              <Input label="Tickets" type="number" min={1} max={event.available_seats} value={form.tickets} onChange={(v) => setForm({ ...form, tickets: Math.min(Number(v), event.available_seats) })} required />
 
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+              <div className="bg-white/10 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Price per seat:</span>
+                  <span className="text-sm font-semibold">₹{perSeatPrice}</span>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm text-gray-300">Total:</span>
+                  <span className="text-lg font-bold">₹{form.tickets * perSeatPrice}</span>
+                </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={submitting || event.available_seats === 0}
-              className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Reserving…' : 'Confirm Reservation'}
-            </button>
-          </form>
+              {error && <p className="text-red-400 text-sm">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={submitting || event.available_seats === 0}
+                className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Processing…' : `Proceed to Payment (₹${form.tickets * perSeatPrice})`}
+              </button>
+            </form>
+          ) : (
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Complete Payment</h3>
+              <p className="text-gray-300 mb-4">
+                Total amount: ₹{form.tickets * perSeatPrice} for {form.tickets} ticket{form.tickets > 1 ? 's' : ''}
+              </p>
+              <StripePayment
+                eventId={id!}
+                tickets={form.tickets}
+                totalPrice={form.tickets * perSeatPrice}
+                userName={form.userName}
+                userEmail={form.userEmail}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentCancel={handlePaymentCancel}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

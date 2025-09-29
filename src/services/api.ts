@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { Event, Booking } from '../types';
 
-const BASE = 'http://localhost:5001'; // Local development
-// const BASE = 'https://event-booking-hjef.onrender.com';  // Deployed
+const BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 // const BASE = `https://dozens-point-absolute-approx.trycloudflare.com`
 
 const axiosInstance = axios.create({
@@ -49,6 +48,41 @@ export const api = {
   getEvent: (id: string) =>
     axiosInstance
       .get<{ data: Event }>(`/api/events/${id}`)
+      .then((r) => r.data.data),
+
+  getSeatStats: (eventId: string) =>
+    axiosInstance
+      .get<{ data: any }>(`/api/events/${eventId}/seats/stats`)
+      .then((r) => r.data.data),
+
+  // Payment APIs
+  createPaymentIntent: (data: {
+    eventId: string;
+    tickets: number;
+    userName: string;
+    userEmail: string;
+    amount: number;
+  }) =>
+    axiosInstance
+      .post<{ clientSecret: string; bookingId: string; amount: number }>(
+        '/api/create-payment-intent',
+        data
+      )
+      .then((r) => r.data),
+
+  confirmPayment: (data: { paymentIntentId: string; bookingId: string }) =>
+    axiosInstance
+      .post<{ message: string; booking: any }>('/api/confirm-payment', data)
+      .then((r) => r.data),
+
+  processRefund: (bookingId: string, reason?: string) =>
+    axiosInstance
+      .post<{ message: string; refund: any }>('/api/refund', { bookingId, reason })
+      .then((r) => r.data),
+
+  getPaymentStatus: (bookingId: string) =>
+    axiosInstance
+      .get<{ data: any }>(`/api/payment-status/${bookingId}`)
       .then((r) => r.data.data),
 
   // generic helpers for auth
