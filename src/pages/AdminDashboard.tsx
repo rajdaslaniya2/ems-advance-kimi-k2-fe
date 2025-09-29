@@ -46,7 +46,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleUpdateEvent = async (eventData: any) => {
     if (!editingEvent) return;
-    
+
     try {
       await api.updateEvent(editingEvent.id, eventData);
       setEditingEvent(null);
@@ -61,7 +61,7 @@ const AdminDashboard: React.FC = () => {
     if (!event) return;
 
     if (!window.confirm(`Are you sure you want to delete "${event.name}"?`)) return;
-    
+
     try {
       await api.deleteEvent(id);
       fetchEvents();
@@ -169,30 +169,20 @@ const AdminDashboard: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 ml-4">
                     <button
-                      onClick={() => {
-                        setEditingEvent(event);
-                        setShowForm(true);
-                      }}
+                      onClick={() => setEditingEvent(event)}
                       className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => navigate(`/admin/seats/${event.id}`)}
-                      className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
-                    >
-                      Manage Seats
-                    </button>
-                    <button
                       onClick={() => handleDeleteEvent(event.id)}
                       disabled={(event.booking_count || 0) > 0}
-                      className={`bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm ${
-                        (event.booking_count || 0) > 0
+                      className={`px-3 py-1 rounded text-sm ${(event.booking_count || 0) > 0
                           ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                           : 'bg-red-600 hover:bg-red-700'
-                      }`}
+                        }`}
                       title={
                         (event.booking_count || 0) > 0
                           ? `Cannot delete: ${event.booking_count} booking(s) exist`

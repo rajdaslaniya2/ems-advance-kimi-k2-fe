@@ -9,8 +9,6 @@ import { Link } from "react-router-dom";
 import Register from "./pages/Register";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
-import SeatBooking from "./pages/SeatBooking";
-import AdminSeatManagement from "./pages/AdminSeatManagement";
 import { getTokenPayload } from "./utils/jwt";
 
 /* ----------  tiny guard  ---------- */
@@ -49,7 +47,7 @@ const Layout: React.FC = () => {
             {token ? (
               <>
                 {/* user info */}
-                
+
 
                 <Link to="/my-bookings" className="hover:text-white transition">
                   My Tickets
@@ -113,14 +111,6 @@ const Layout: React.FC = () => {
               </PrivateAdmin>
             }
           />
-          <Route
-            path="/admin/seats/:eventId"
-            element={
-              <PrivateAdmin>
-                <AdminSeatManagement />
-              </PrivateAdmin>
-            }
-          />
 
           {/* private sections */}
           <Route
@@ -128,14 +118,6 @@ const Layout: React.FC = () => {
             element={
               <Private>
                 <BookingForm />
-              </Private>
-            }
-          />
-          <Route
-            path="/book-seats/:id"
-            element={
-              <Private>
-                <SeatBooking />
               </Private>
             }
           />
