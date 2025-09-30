@@ -11,6 +11,7 @@ interface StripePaymentProps {
   totalPrice: number;
   userName: string;
   userEmail: string;
+  selectedSeats: string[];
   onPaymentSuccess: (bookingId: string) => void;
   onPaymentCancel: () => void;
 }
@@ -21,6 +22,7 @@ const StripeCheckoutForm: React.FC<{
   totalPrice: number;
   userName: string;
   userEmail: string;
+  selectedSeats: string[];
   onPaymentSuccess: (bookingId: string) => void;
   onPaymentCancel: () => void;
 }> = ({
@@ -29,6 +31,7 @@ const StripeCheckoutForm: React.FC<{
   totalPrice,
   userName,
   userEmail,
+  selectedSeats,
   onPaymentSuccess,
   onPaymentCancel
 }) => {
@@ -47,7 +50,8 @@ const StripeCheckoutForm: React.FC<{
             tickets,
             userName,
             userEmail,
-            amount: totalPrice
+            amount: totalPrice,
+            selectedSeats,
           });
           setClientSecret(response.clientSecret);
           setBookingId(response.bookingId);
@@ -57,7 +61,7 @@ const StripeCheckoutForm: React.FC<{
       };
 
       createPaymentIntent();
-    }, [eventId, tickets, totalPrice, userName, userEmail]);
+    }, [eventId, tickets, totalPrice, userName, userEmail, selectedSeats]);
 
     const handleSubmit = async (event: React.FormEvent) => {
       event.preventDefault();

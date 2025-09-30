@@ -34,26 +34,12 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleCreateEvent = async (eventData: any) => {
-    try {
-      await api.createEvent(eventData);
-      setShowForm(false);
-      fetchEvents();
-    } catch (err: any) {
-      throw new Error(err.response?.data?.message || "Failed to create event");
-    }
+  const handleCreateEvent = () => {
+    navigate("/admin/events/new");
   };
 
-  const handleUpdateEvent = async (eventData: any) => {
-    if (!editingEvent) return;
-
-    try {
-      await api.updateEvent(editingEvent.id, eventData);
-      setEditingEvent(null);
-      fetchEvents();
-    } catch (err: any) {
-      throw new Error(err.response?.data?.message || "Failed to update event");
-    }
+  const handleEditEvent = (event: Event) => {
+    navigate(`/admin/events/${event.id}/edit`);
   };
 
   const handleDeleteEvent = async (id: string) => {
@@ -98,10 +84,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-gray-400 mt-1">Welcome, {user?.name}</p>
           </div>
           <button
-            onClick={() => {
-              setEditingEvent(null);
-              setShowForm(true);
-            }}
+            onClick={handleCreateEvent}
             className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md font-medium"
           >
             Create New Event
@@ -114,32 +97,13 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Event Form Modal */}
-        {(showForm || editingEvent) && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4">
-                {editingEvent ? "Edit Event" : "Create New Event"}
-              </h2>
-              <EventForm
-                event={editingEvent}
-                onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
-                onCancel={() => {
-                  setShowForm(false);
-                  setEditingEvent(null);
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Events List */}
         <div className="grid gap-6">
           {events.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-400 text-lg">No events found</p>
               <button
-                onClick={() => setShowForm(true)}
+                onClick={handleCreateEvent}
                 className="mt-4 text-purple-400 hover:text-purple-300"
               >
                 Create your first event
@@ -171,7 +135,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="flex gap-2 ml-4">
                     <button
-                      onClick={() => setEditingEvent(event)}
+                      onClick={() => handleEditEvent(event)}
                       className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
                     >
                       Edit
@@ -180,8 +144,8 @@ const AdminDashboard: React.FC = () => {
                       onClick={() => handleDeleteEvent(event.id)}
                       disabled={(event.booking_count || 0) > 0}
                       className={`px-3 py-1 rounded text-sm ${(event.booking_count || 0) > 0
-                          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                          : 'bg-red-600 hover:bg-red-700'
+                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : 'bg-red-600 hover:bg-red-700'
                         }`}
                       title={
                         (event.booking_count || 0) > 0

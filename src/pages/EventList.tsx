@@ -3,9 +3,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useEvents } from "../hooks/useEvents";
 import { formatDate } from "../utils/date";
+import { useAuth } from "../context/AuthContext";
 
 const EventList: React.FC = () => {
   const { events, loading, error } = useEvents();
+  const { user } = useAuth();
   const nav = useNavigate();
 
   if (loading) return <Skeleton />;
@@ -19,42 +21,58 @@ const EventList: React.FC = () => {
           Upcoming Events
         </h1>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((e) => (
-            <div
-              key={e.id}
-              className="group relative bg-white/5 backdrop-blur rounded-2xl overflow-hidden shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-1"
+        {events.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <span className="text-4xl">🎭</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">No Events Available</h2>
+            <p className="text-gray-400 mb-6">Check back later for exciting upcoming events!</p>
+            {/* <button
+              onClick={() => nav('/')}
+              className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold transition"
             >
-              <div className="h-48 w-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600">
-                <span className="text-5xl font-black tracking-tight text-white/90">
-                  {e.name
-                    .split(" ")
-                    .map((w) => w[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2)}
-                </span>
-              </div>
-              <div className="p-5">
-                <h3 className="text-xl font-bold mb-2">{e.name}</h3>
-                <p className="text-sm text-gray-300">
-                  {formatDate(e.date)} · {e.location}
-                </p>
-                <div className="flex items-center justify-between mt-4">
-                  <span className="text-sm text-green-400 font-medium">
-                    {e.available_seats} seats left
+              Refresh Events
+            </button> */}
+          </div>
+        ) : (
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {events.map((e) => (
+              <div
+                key={e.id}
+                className="group relative bg-white/5 backdrop-blur rounded-2xl overflow-hidden shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="h-48 w-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600">
+                  <span className="text-5xl font-black tracking-tight text-white/90">
+                    {e.name
+                      .split(" ")
+                      .map((w) => w[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
                   </span>
-                  <button
-                    onClick={() => nav(`/book/${e.id}`)}
-                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-semibold transition"
-                  >
-                    Book Now
-                  </button>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-xl font-bold mb-2">{e.name}</h3>
+                  <p className="text-sm text-gray-300">
+                    {formatDate(e.date)} · {e.location}
+                  </p>
+                  <div className="flex items-center justify-between mt-4">
+                    <span className="text-sm text-green-400 font-medium">
+                      {e.available_seats} seats left
+                    </span>
+                    {user?.role !== 'admin' && <button
+                      onClick={() => nav(`/book/${e.id}`)}
+                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm font-semibold transition"
+                    >
+                      Book Now
+                    </button>}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

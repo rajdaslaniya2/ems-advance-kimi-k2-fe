@@ -27,13 +27,15 @@ export const api = {
       userName: name,
       userEmail: email,
       tickets,
-    }: Omit<Booking, 'id' | 'status' | 'eventId'>
+      selectedSeats,
+    }: Omit<Booking, 'id' | 'status' | 'eventId'> & { selectedSeats: string[] }
   ) =>
     axiosInstance
       .post<{ id: string }>(`/api/events/${eventId}/book`, {
         name,
         email,
         tickets,
+        selectedSeats,
       })
       .then((r) => r.data),
   getBookings: () =>
@@ -62,6 +64,7 @@ export const api = {
     userName: string;
     userEmail: string;
     amount: number;
+    selectedSeats: string[];
   }) =>
     axiosInstance
       .post<{ clientSecret: string; bookingId: string; amount: number }>(
@@ -77,7 +80,10 @@ export const api = {
 
   processRefund: (bookingId: string, reason?: string) =>
     axiosInstance
-      .post<{ message: string; refund: any }>('/api/refund', { bookingId, reason })
+      .post<{ message: string; refund: any }>('/api/refund', {
+        bookingId,
+        reason,
+      })
       .then((r) => r.data),
 
   getPaymentStatus: (bookingId: string) =>

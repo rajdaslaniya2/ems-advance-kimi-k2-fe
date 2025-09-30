@@ -9,12 +9,13 @@ import { Link } from "react-router-dom";
 import Register from "./pages/Register";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import EventManagement from "./pages/EventManagement";
 import { getTokenPayload } from "./utils/jwt";
 
 /* ----------  tiny guard  ---------- */
 const Private: React.FC<{ children: React.JSX.Element }> = ({ children }) => {
-  const { token } = useAuth();
-  return token ? children : <Navigate to="/login" replace />;
+  const { token, user } = useAuth();
+  return token && user?.role !== 'admin' ? children : user?.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/login" replace />;
 };
 
 const PrivateAdmin: React.FC<{ children: React.JSX.Element }> = ({ children }) => {
@@ -22,6 +23,11 @@ const PrivateAdmin: React.FC<{ children: React.JSX.Element }> = ({ children }) =
   if (!token) return <Navigate to="/login" replace />;
   if (user?.role !== 'admin') return <Navigate to="/admin/login" replace />;
   return children;
+};
+
+const RedirectIfLoggedIn: React.FC<{ children: React.JSX.Element }> = ({ children }) => {
+  const { token } = useAuth();
+  return token ? <Navigate to="/" replace /> : children;
 };
 
 /* ----------  layout with dynamic nav  ---------- */
@@ -33,25 +39,30 @@ const Layout: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       <header className="sticky top-0 z-10 bg-black/30 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a
-            href="/"
+          {user?.role !== 'admin' && <Link
+            to="/"
             className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400"
           >
             Eventify
-          </a>
-          <nav className="flex items-center gap-6 text-sm text-gray-300">
-            <Link to="/" className="hover:text-white transition">
-              Explore
+          </Link>}
+          {user?.role === 'admin' && (
+            <Link to="/admin/dashboard" className="hover:text-white transition">
+              Admin Dashboard
             </Link>
+          )}
+          <nav className="flex items-center gap-6 text-sm text-gray-300">
+            {user?.role !== 'admin' && <Link to="/" className="hover:text-white transition">
+              Explore
+            </Link>}
 
             {token ? (
               <>
                 {/* user info */}
 
 
-                <Link to="/my-bookings" className="hover:text-white transition">
+                {user?.role !== 'admin' && <Link to="/my-bookings" className="hover:text-white transition">
                   My Tickets
-                </Link>
+                </Link>}
                 <button
                   onClick={logout}
                   className="hover:text-white transition"
@@ -79,11 +90,6 @@ const Layout: React.FC = () => {
                 </Link>
               </>
             )}
-            {user?.role === 'admin' && (
-              <Link to="/admin/dashboard" className="hover:text-white transition">
-                Admin Dashboard
-              </Link>
-            )}
           </nav>
         </div>
       </header>
@@ -93,15 +99,27 @@ const Layout: React.FC = () => {
           <Route path="/" element={<EventList />} />
           <Route
             path="/login"
-            element={!token ? <Login /> : <Navigate to="/" replace />}
+            element={
+              <RedirectIfLoggedIn>
+                <Login />
+              </RedirectIfLoggedIn>
+            }
           />
           <Route
             path="/register"
-            element={!token ? <Register /> : <Navigate to="/" replace />}
+            element={
+              <RedirectIfLoggedIn>
+                <Register />
+              </RedirectIfLoggedIn>
+            }
           />
           <Route
             path="/admin/login"
-            element={!token || user?.role !== 'admin' ? <AdminLogin /> : <Navigate to="/admin/dashboard" replace />}
+            element={
+              <RedirectIfLoggedIn>
+                <AdminLogin />
+              </RedirectIfLoggedIn>
+            }
           />
           <Route
             path="/admin/dashboard"
@@ -111,6 +129,23 @@ const Layout: React.FC = () => {
               </PrivateAdmin>
             }
           />
+          <Route
+            path="/admin/events/new"
+            element={
+              <PrivateAdmin>
+                <EventManagement />
+              </PrivateAdmin>
+            }
+          />
+          <Route
+            path="/admin/events/:id/edit"
+            element={
+              <PrivateAdmin>
+                <EventManagement />
+              </PrivateAdmin>
+            }
+          />
+
 
           {/* private sections */}
           <Route

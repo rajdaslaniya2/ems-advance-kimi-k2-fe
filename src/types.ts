@@ -1,3 +1,19 @@
+export interface Seat {
+  id: string;
+  row: number;
+  column: number;
+  tier: 'gold' | 'silver' | 'platinum' | 'blocked';
+  available: boolean;
+  price: number;
+}
+
+export interface SeatingLayout {
+  rows: number;
+  columns: number;
+  seats: Seat[];
+  booked_seats?: string[];
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -7,6 +23,12 @@ export interface Event {
   total_seats: number;
   description?: string;
   booking_count?: number;
+  pricing: {
+    gold: { price: number; available: boolean };
+    silver: { price: number; available: boolean };
+    platinum: { price: number; available: boolean };
+  };
+  seating_layout: SeatingLayout;
 }
 
 export interface Booking {
